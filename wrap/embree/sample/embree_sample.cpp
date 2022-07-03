@@ -21,9 +21,21 @@
 #include <wrap/io_trimesh/import_off.h>
 #include <time.h>
 #include <vcg/math/gen_normal.h>
+#include <vcg/complex/allocate.h>
 
 //vcgLibForEmbree
 #include<wrap/embree/EmbreeAdaptor.h>
+
+class MyVertex; class MyEdge; class MyFace;
+struct MyUsedTypes : public vcg::UsedTypes<vcg::Use<MyVertex>   ::AsVertexType,
+    vcg::Use<MyEdge>     ::AsEdgeType,
+    vcg::Use<MyFace>     ::AsFaceType> {};
+
+class MyVertex : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Normal3f, vcg::vertex::BitFlags, vcg::vertex::VFAdj, vcg::vertex::Qualityf, vcg::vertex::Color4b> {};
+class MyFace : public vcg::Face<   MyUsedTypes, vcg::face::FFAdj, vcg::face::VFAdj, vcg::face::Normal3f, vcg::face::VertexRef, vcg::face::BitFlags, vcg::face::Color4b, vcg::face::Qualityf> {};
+class MyEdge : public vcg::Edge<   MyUsedTypes> {};
+
+class MyMesh : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<MyFace>, std::vector<MyEdge>  > {};
 
 using namespace vcg;
 using namespace std;
@@ -52,15 +64,14 @@ int main( int argc, char **argv )
   vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m6,m);
 
   EmbreeAdaptor<MyMesh> adaptor = EmbreeAdaptor<MyMesh>(m,8);
-  adaptor.computeNormalAnalysis(m, nOfRays);
-  //adaptor.computeAmbientOcclusion(m,nOfRays);
-  //tri::UpdateQuality<MyMesh>::VertexFromFace(m);
-  //tri::UpdateColor<MyMesh>::PerVertexQualityGray(m);
+  adaptor.computeAmbientOcclusion(m,nOfRays);
+  tri::UpdateQuality<MyMesh>::VertexFromFace(m);
+  tri::UpdateColor<MyMesh>::PerVertexQualityGray(m);
   tri::UpdateNormal<MyMesh>::NormalizePerVertex(m);
-  tri::io::ExporterOFF<MyMesh>::Save(m,"testAO.off",tri::io::Mask::IOM_VERTNORMAL);
+  tri::io::ExporterOFF<MyMesh>::Save(m,"testAO.off",tri::io::Mask::IOM_VERTCOLOR);
+ 
+  cout << "Done AO" << endl;
 
-  
-  /*
   std::vector<Point3f> unifDirVec;
   std::vector<Point3f> ndir;
 	GenNormal<float>::Fibonacci(nOfRays,unifDirVec);
@@ -77,6 +88,7 @@ int main( int argc, char **argv )
   tri::UpdateColor<MyMesh>::PerVertexQualityGray(m2);
   tri::io::ExporterOFF<MyMesh>::Save(m2,"testAODir.off",tri::io::Mask::IOM_VERTCOLOR);
 
+  cout << "Done AO Directioned" << endl;
   
   EmbreeAdaptor<MyMesh> adaptor2 = EmbreeAdaptor<MyMesh>(m4,8);
   adaptor2.computeSDF(m4,nOfRays,90);
@@ -84,16 +96,21 @@ int main( int argc, char **argv )
   tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m4);
   tri::io::ExporterOFF<MyMesh>::Save(m4,"testSDF.off",tri::io::Mask::IOM_VERTCOLOR);
   
-  adaptor = EmbreeAdaptor<MyMesh>(m5,4);
-  vector<Point3f> BentNormal = adaptor.AOBentNormal(m5,nOfRays);
+  cout << "Done SDF" << endl;
+
+  adaptor = EmbreeAdaptor<MyMesh>(m5,8);
+  adaptor.computeNormalAnalysis(m5, nOfRays);
+  tri::io::ExporterOFF<MyMesh>::Save(m, "testNormal.off", tri::io::Mask::IOM_VERTNORMAL);
+  //vector<Point3f> BentNormal = adaptor.AOBentNormal(m5,nOfRays);
+
+  cout << "Done NormalAnlysis" << endl;
 
   adaptor = EmbreeAdaptor<MyMesh>(m6, 4);
   Point3f p(1, 0, 0);
   adaptor.selectVisibleFaces(m6, p);
   tri::io::ExporterOFF<MyMesh>::Save(m6, "testSelectS.off", tri::io::Mask::IOM_FACECOLOR);
   
-  */
-  
-  cout << "done" << endl;
+  cout << "done face selection" << endl;
+  cout << "Done All" << endl;
   return 0;
 }

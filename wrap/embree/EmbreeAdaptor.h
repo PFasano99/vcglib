@@ -14,6 +14,7 @@
 #include <time.h>
 #include <omp.h>
 
+/*
 class MyVertex; class MyEdge; class MyFace;
 struct MyUsedTypes : public vcg::UsedTypes<vcg::Use<MyVertex>   ::AsVertexType,
                                            vcg::Use<MyEdge>     ::AsEdgeType,
@@ -24,7 +25,7 @@ class MyFace    : public vcg::Face<   MyUsedTypes, vcg::face::FFAdj ,vcg::face::
 class MyEdge    : public vcg::Edge<   MyUsedTypes> {};
 
 class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<MyFace> , std::vector<MyEdge>  > {};
-
+*/
 using namespace vcg;
 using namespace std;
 
@@ -146,11 +147,15 @@ namespace vcg{
         @Parameter: std::vector<Point3f> unifDirVec, this parameter is a vector of direction specified by the user. 
         @Description: Given a mesh for each face from the barycenter this method shoots n rays towards some user generated directions(to infinity).
             If the ray direction is not pointing inside than the ray is actually shoot. 
-            If the ray intersect something than the face quality of the mesh is updated with the normal of the fica multiplied by the direction.       
+            If the ray intersect something than the face quality of the mesh is updated with the normal of the fica multiplied by the direction.
+
+            One more operation done in the AmbientOcclusion is to calculate the bent normal foreach face and save it in an attribute named "BentNormal"       
         */
         public:
          void computeAmbientOcclusion(MeshType &inputM, std::vector<Point3f> unifDirVec){
             tri::UpdateQuality<MeshType>::FaceConstant(inputM,0);
+            MyMesh::PerFaceAttributeHandle<Point3f> bentNormal = vcg::tri::Allocator<MyMesh>::GetPerFaceAttribute<Point3f>(inputM,string("BentNormal"));
+  
             #pragma omp parallel shared(inputM) 
             {
                 #pragma omp for 
@@ -161,6 +166,8 @@ namespace vcg{
                     rayhit.ray.org_x  = b[0]; rayhit.ray.org_y = b[1]; rayhit.ray.org_z = b[2];  
                     rayhit.ray.tnear  = 0.00001f;
                     
+                    Point3f bN;
+                    int accRays=0;
                     for(int r = 0; r<unifDirVec.size(); r++){
                         Point3f dir = unifDirVec.at(r);                       
                         float scalarP = inputM.face[i].N()*dir;
@@ -175,11 +182,15 @@ namespace vcg{
 
                             rtcIntersect1(scene, &context, &rayhit);
 
-                            if (rayhit.hit.geomID == RTC_INVALID_GEOMETRY_ID) 
+                            if (rayhit.hit.geomID == RTC_INVALID_GEOMETRY_ID){
+                                bN+=dir;
+                                accRays++; 
                                 inputM.face[i].Q()+=scalarP;
-                                        
+                            } 
+                                                               
                         }
                     }
+                    bentNormal[i] = bN/accRays;
                 }
             }
             tri::UpdateColor<MeshType>::PerFaceQualityGray(inputM);
@@ -477,60 +488,6 @@ namespace vcg{
                                    
 
          }
-
-
-        public:
-         std::vector<Point3f> AOBentNormal(MeshType &inputM, int nRay){
-            std::vector<Point3f> unifDirVec;
-            std::vector<Point3f> bentNormalDir;            
-            GenNormal<float>::Fibonacci(nRay,unifDirVec);
-            tri::UpdateQuality<MeshType>::FaceConstant(inputM,0);
-
-            #pragma omp parallel 
-            {
-                #pragma omp for
-                for(int i = 0;i<inputM.FN(); i++)
-                {       
-                    RTCRayHit rayhit;     
-                    Point3f b = vcg::Barycenter(inputM.face[i]);
-                    rayhit.ray.org_x  = b[0]; rayhit.ray.org_y = b[1]; rayhit.ray.org_z = b[2];  
-                    rayhit.ray.tnear  = 1e-4;
-                    
-                    Point3f bN;
-                    int accRays=0;
-                    for(int r = 0; r<nRay; r++){
-                        Point3f dir = unifDirVec.at(r);
-                        
-                        float scalarP = inputM.face[i].N()*dir;
-
-                        if(scalarP>0){
-                            rayhit.ray.dir_x  = dir[0]; rayhit.ray.dir_y = dir[1]; rayhit.ray.dir_z = dir[2];
-                            rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
-                            rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;   
-                            RTCIntersectContext context;
-                            rtcInitIntersectContext(&context);
-
-                            rtcIntersect1(scene, &context, &rayhit);
-
-                            if (rayhit.hit.geomID == RTC_INVALID_GEOMETRY_ID) 
-                            {                            
-                                bN+=dir;
-                                accRays++; 
-                            } 
-                                
-                        }
-                    }               
-                    bentNormalDir.push_back(bN/accRays);
-                
-                    //inputM.face[i].Q()/=accRays;//inputM.face[i].N()*bentNormalDir;
-                }
-            }
-            //tri::UpdateColor<MeshType>::PerFaceQualityGray(inputM);
-            rtcReleaseScene(scene);
-            rtcReleaseDevice(device);
-
-            return bentNormalDir;
-        }    
 
     };
 }

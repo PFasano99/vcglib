@@ -9,23 +9,33 @@ set(./build ${PROJECT_BINARY_DIR}/bin)
 
 add_executable(embree_sample ${SOURCES})
 
+FIND_PACKAGE(embree 3.0 REQUIRED)
+#FIND_PACKAGE(OpenMP REQUIRED)
+
+INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(embree_sample ${EMBREE_LIBRARY})
+
+INCLUDE_DIRECTORIES(../../..)
+INCLUDE_DIRECTORIES(../../../eigenlib)
+
+
 ### Eigen
-set(Eigen3_DIR "E:/vcpkg/vcpkg-master/vcpkg-master/packages/eigen3_x64-windows/share/eigen3")
-find_package(Eigen3 CONFIG REQUIRED)
-    target_link_libraries(embree_sample PRIVATE Eigen3::Eigen)
+#set(Eigen3_DIR "CMAKE_CURRENT_LIST_DIR")
+#find_package(Eigen3 CONFIG REQUIRED)
+#    target_link_libraries(embree_sample PRIVATE Eigen3::Eigen)
 
-set(embree_DIR "E:/vcpkg/vcpkg-master/vcpkg-master/packages/embree3_x64-windows-release/share/embree")
-find_package(embree 3 REQUIRED)
-    target_link_libraries(embree_sample PRIVATE embree)
-list(APPEND VCG_HEADERS wrap/EmbreeAdaptor.h) 
+#set(embree_DIR "C:/Users/super/Desktop/vcpkg-master/vcpkg-master/packages/embree3_x64-windows-release/share/embree")
+#find_package(embree 3 REQUIRED)
+#    target_link_libraries(embree_sample PRIVATE embree)
+#list(APPEND VCG_HEADERS wrap/EmbreeAdaptor.h) 
 
-find_path(VCGLIB_INCLUDE_DIRS "img/img.h")
-    target_include_directories(embree_sample PRIVATE ${VCGLIB_INCLUDE_DIRS})
+#find_path(VCGLIB_INCLUDE_DIRS "img/img.h")
+#    target_include_directories(embree_sample PRIVATE ${VCGLIB_INCLUDE_DIRS})
 
 
-file(COPY E:/vcpkg/vcpkg-master/vcpkg-master/packages/tbb_x64-windows-release/bin/tbb.dll
-     DESTINATION E:/UniversitàMagistrale/secondoSemestre/3DgeometricModelingProcessing/vcglib/wrap/embree/sample/build/Debug)
+#file(COPY C:/Users/super/Desktop/vcpkg-master/vcpkg-master/packages/tbb_x64-windows-release/bin/tbb.dll
+#     DESTINATION E:/UniversitàMagistrale/secondoSemestre/3DgeometricModelingProcessing/vcglib/wrap/embree/sample/build/Debug)
 
-file(COPY E:/vcpkg/vcpkg-master/vcpkg-master/packages/embree3_x64-windows-release/bin/embree3.dll
-     DESTINATION E:/UniversitàMagistrale/secondoSemestre/3DgeometricModelingProcessing/vcglib/wrap/embree/sample/build/Debug)
+#file(COPY C:/Users/super/Desktop/vcpkg-master/vcpkg-master/packages/embree3_x64-windows-release/bin/embree3.dll
+#     DESTINATION E:/UniversitàMagistrale/secondoSemestre/3DgeometricModelingProcessing/vcglib/wrap/embree/sample/build/Debug)
 
