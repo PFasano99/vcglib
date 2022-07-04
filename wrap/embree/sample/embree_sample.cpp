@@ -19,6 +19,7 @@
 #include<wrap/io_trimesh/export_ply.h>
 #include <wrap/io_trimesh/export_off.h>
 #include <wrap/io_trimesh/import_off.h>
+
 #include <time.h>
 #include <vcg/math/gen_normal.h>
 #include <vcg/complex/allocate.h>
@@ -45,8 +46,8 @@ int main( int argc, char **argv )
 {
     cout << "start" << endl;
   MyMesh m;
-  tri::io::ImporterOFF<MyMesh>::Open(m, "../ExampleMeshes/DragonHead.off");//argv[1]);//metti il rferimento ad una mesh
-  int ret = tri::io::ImporterOFF<MyMesh>::Open(m,"../ExampleMeshes/DragonHead.off");
+  tri::io::ImporterOFF<MyMesh>::Open(m, "../ExampleMeshes/abominevole.off");//argv[1]);//metti il rferimento ad una mesh
+  int ret = tri::io::ImporterOFF<MyMesh>::Open(m,"../ExampleMeshes/abominevole.off");
   if(ret!=tri::io::ImporterOFF<MyMesh>::NoError)
   {
     cout<<"Error reading file \n"<<endl;
@@ -100,7 +101,7 @@ int main( int argc, char **argv )
 
   adaptor = EmbreeAdaptor<MyMesh>(m5,8);
   adaptor.computeNormalAnalysis(m5, nOfRays);
-  tri::io::ExporterOFF<MyMesh>::Save(m, "testNormal.off", tri::io::Mask::IOM_VERTNORMAL);
+  tri::io::ExporterOFF<MyMesh>::Save(m5, "testNormal.off", tri::io::Mask::IOM_FACENORMAL);
   //vector<Point3f> BentNormal = adaptor.AOBentNormal(m5,nOfRays);
 
   cout << "Done NormalAnlysis" << endl;

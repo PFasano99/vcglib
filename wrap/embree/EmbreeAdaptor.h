@@ -14,25 +14,13 @@
 #include <time.h>
 #include <omp.h>
 
-/*
-class MyVertex; class MyEdge; class MyFace;
-struct MyUsedTypes : public vcg::UsedTypes<vcg::Use<MyVertex>   ::AsVertexType,
-                                           vcg::Use<MyEdge>     ::AsEdgeType,
-                                           vcg::Use<MyFace>     ::AsFaceType>{};
-
-class MyVertex  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Normal3f, vcg::vertex::BitFlags, vcg::vertex::VFAdj, vcg::vertex::Qualityf, vcg::vertex::Color4b>{};
-class MyFace    : public vcg::Face<   MyUsedTypes, vcg::face::FFAdj ,vcg::face::VFAdj, vcg::face::Normal3f,  vcg::face::VertexRef, vcg::face::BitFlags, vcg::face::Color4b, vcg::face::Qualityf> {};
-class MyEdge    : public vcg::Edge<   MyUsedTypes> {};
-
-class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<MyFace> , std::vector<MyEdge>  > {};
-*/
 using namespace vcg;
 using namespace std;
 
 
 /*
     @Author: Paolo Fasano
-    This class aims to integrate intel embree3 with the vcglib giving some basic methods that can be used to build more complex features.
+    @Description: This class aims to integrate intel embree3 with the vcglib giving some basic methods that can be used to build more complex features.
 */
 namespace vcg{
     template <class MeshType>
@@ -51,9 +39,8 @@ namespace vcg{
 
         /*
         @Author: Paolo Fasano
-        @Parameter: Point3f rayDirection, this variable indicates the direction the rays are shoot towards
-        @Description: Given a mesh (loaded in the constructor using the loadVCGMeshInScene method) foreach face 
-            the barycenter is found and shoots a single ray starting from the barycenter. If the ray intersect with
+        @Parameter: Point3f rayDirection, direction the rays are shoot towards
+        @Description: foreach face the barycenter is found and a single ray is shoot. If the ray intersect with
             something the face color is set to black else is set to white.  
         */
         public:       
@@ -92,8 +79,8 @@ namespace vcg{
 
         /*
         @Author: Paolo Fasano
-        @Parameter: MeshType &m, this variable indicates reference to a mesh
-        @Description: Given a mesh this method apply some preprocessing over it using standard vcglib methods. 
+        @Parameter: MeshType &m, reference to a mesh
+        @Description: this method apply some preprocessing over it using standard vcglib methods. 
             Than the mesh is loaded as a new embree geometry inside a new embree scene. The new embree variables 
             are global to the class in order to be used with the other methods.   
         */
@@ -128,9 +115,9 @@ namespace vcg{
 
         /*
         @Author: Paolo Fasano
-        @Parameter: MeshType &m, this variable indicates reference to a mesh.
-        @Parameter: int nRay, this parameter indicates the number of rays that must be generated and shoot. 
-        @Description: Given a mesh for each face from the barycenter this method shoots n rays towards a generated direction(to infinity).
+        @Parameter: MeshType &m, reference to a mesh.
+        @Parameter: int nRay, number of rays that must be generated and shoot. 
+        @Description: for each face from the barycenter this method shoots n rays towards a generated direction(to infinity).
             If the ray direction is not pointing inside than the ray is actually shoot. 
             If the ray intersect something than the face quality of the mesh is updated with the normal of the fica multiplied by the direction.       
         */
@@ -143,9 +130,9 @@ namespace vcg{
 
         /*
         @Author: Paolo Fasano
-        @Parameter: MeshType &m, this variable indicates reference to a mesh.
-        @Parameter: std::vector<Point3f> unifDirVec, this parameter is a vector of direction specified by the user. 
-        @Description: Given a mesh for each face from the barycenter this method shoots n rays towards some user generated directions(to infinity).
+        @Parameter: MeshType &m,reference to a mesh.
+        @Parameter: std::vector<Point3f> unifDirVec, vector of direction specified by the user. 
+        @Description: for each face from the barycenter this method shoots n rays towards some user generated directions(to infinity).
             If the ray direction is not pointing inside than the ray is actually shoot. 
             If the ray intersect something than the face quality of the mesh is updated with the normal of the fica multiplied by the direction.
 
@@ -200,10 +187,10 @@ namespace vcg{
 
         /*
         @Author: Paolo Fasano
-        @Parameter: MeshType &m, this variable indicates reference to a mesh.
-        @Parameter: int nRay, this parameter indicates the number of rays that must be generated and shoot. 
+        @Parameter: MeshType &m, reference to a mesh.
+        @Parameter: int nRay, number of rays that must be generated and shoot. 
         @Parameter: float Tau, the grater this value is the grater the influence of the rays that intersect with some face
-        @Description: Given a mesh for each face from the barycenter this method shoots n rays towards a generated direction(to infinity).
+        @Description: for each face from the barycenter this method shoots n rays towards a generated direction(to infinity).
             If the ray direction is not pointing inside than the ray is actually shoot. 
             If the ray intersect something than the face quality of the mesh is updated with the normal of the fica multiplied by the direction;
             else, if there are no hits, the face get updated of 1-distanceHit^tau       
@@ -218,10 +205,10 @@ namespace vcg{
 
         /*
         @Author: Paolo Fasano
-        @Parameter: MeshType &m, this variable indicates reference to a mesh.
-        @Parameter: std::vector<Point3f> unifDirVec, this parameter is a vector of direction specified by the user. 
+        @Parameter: MeshType &m, reference to a mesh.
+        @Parameter: std::vector<Point3f> unifDirVec, vector of direction specified by the user. 
         @Parameter: float Tau, the grater this value is the grater the influence of the rays that intersect with some face
-        @Description: Given a mesh for each face from the barycenter this method shoots n rays towards a generated direction(to infinity).
+        @Description: for each face from the barycenter this method shoots n rays towards a generated direction(to infinity).
             If the ray direction is not pointing inside than the ray is actually shoot. 
             If the ray intersect something than the face quality of the mesh is updated with the normal of the fica multiplied by the direction;
             else, if there are no hits, the face get updated of 1-distanceHit^tau       
@@ -270,10 +257,10 @@ namespace vcg{
 
         /*
         @Author: Paolo Fasano
-        @Parameter: MeshType &m, this variable indicates reference to a mesh.
-        @Parameter: int nRay, this parameter indicates the number of rays that must be generated and shoot. 
+        @Parameter: MeshType &m, reference to a mesh.
+        @Parameter: int nRay, number of rays that must be generated and shoot. 
         @Parameter: float degree, this variable represents the angle of the cone for which we consider a point as a valid direction
-        @Description: Given a mesh for each face from the barycenter this method shoots n rays towards a generated direction(to infinity).
+        @Description: for each face from the barycenter this method shoots n rays towards a generated direction(to infinity).
             If the ray direction is not pointing inside and the angle is no more than degree, than the ray is actually shoot. 
             If the ray intersect something than the face quality of the mesh is updated with the distance between the barycenter and the hit.
             The face quality value is than updated dividing it by the number of hits.       
@@ -337,8 +324,8 @@ namespace vcg{
 
         /*
         @Author: Paolo Fasano
-        @Parameter: MeshType &m, this variable indicates reference to a mesh.
-        @Parameter: int nRay, this parameter indicates the number of rays that must be generated and shoot. 
+        @Parameter: MeshType &m, reference to a mesh.
+        @Parameter: int nRay, number of rays that must be generated and shoot. 
         @Description: Given a mesh for each face, for each ray, it detects all the intersections with all the facets
             (i.e., without stopping at the first intersection), and accumulates the number.  
             The rays are shoot two times each, one inside and one outside the mesh.
@@ -350,22 +337,21 @@ namespace vcg{
         */
         public:
          void computeNormalAnalysis(MeshType &inputM, int nRay){
-            tri::UpdateQuality<MeshType>::FaceConstant(inputM,0);
+            
             std::vector<Point3f> unifDirVec;
             GenNormal<float>::Fibonacci(nRay,unifDirVec);
 
+            tri::UpdateSelection<MeshType>::FaceClear(inputM);
             #pragma omp parallel 
             {
-                double start; 
-                double end; 
-                start = omp_get_wtime(); 
+                //double start; 
+                //start = omp_get_wtime(); 
                 #pragma omp for
                 for(int i = 0;i<inputM.FN(); i++)
                 {           
                     RTCRayHit rayhit; 
                     Point3f b = vcg::Barycenter(inputM.face[i]);
-                    rayhit.ray.org_x  = b[0]; rayhit.ray.org_y = b[1]; rayhit.ray.org_z = b[2];  
-                    
+                    rayhit.ray.org_x  = b[0]; rayhit.ray.org_y = b[1]; rayhit.ray.org_z = b[2];         
                     
                     int frontHit = 0;
                     int backHit = 0;
@@ -373,8 +359,7 @@ namespace vcg{
                     for(int r = 0; r<unifDirVec.size(); r++){
                         Point3f dir = unifDirVec.at(r);                       
                         float scalarP = inputM.face[i].N()*dir;
-
-                        if(scalarP>0){
+                       
                             rayhit.ray.tnear  = 1e-4f;
                             rayhit.ray.dir_x  = dir[0]; rayhit.ray.dir_y = dir[1]; rayhit.ray.dir_z = dir[2];
                             rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
@@ -386,67 +371,25 @@ namespace vcg{
                             rtcIntersect1(scene, &context, &rayhit);
 
                             if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
-                                frontHit++;
+                                if (scalarP > 0)
+                                    frontHit++;
+                                else
+                                    backHit++;
                                 Point3f p = b+dir*rayhit.ray.tfar;
                                 frontHit += findInterceptNumber(p*2);
                             }                            
-                             
-                            rayhit.ray.tnear  = -1e-4f;                              
-                            rayhit.ray.dir_x  = -dir[0]; rayhit.ray.dir_y = -dir[1]; rayhit.ray.dir_z = -dir[2];
-                            rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
-                            rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
-
-                            rtcIntersect1(scene, &context, &rayhit);
-
-                            if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
-                                backHit++;
-                                Point3f p = b+dir*rayhit.ray.tfar;
-                                backHit += findInterceptNumber(-p*2);
-                            }
-                                                         
-                        }
-                        else{
-                            rayhit.ray.tnear  = -1e-4f;
-                            rayhit.ray.dir_x  = -dir[0]; rayhit.ray.dir_y = -dir[1]; rayhit.ray.dir_z = -dir[2];
-                            rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
-                            rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
-
-                            RTCIntersectContext context;
-                            rtcInitIntersectContext(&context);
-
-                            rtcIntersect1(scene, &context, &rayhit);
-
-                            if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
-                                frontHit++;
-                                Point3f p = b+dir*rayhit.ray.tfar;
-                                frontHit += findInterceptNumber(p*2);
-                            }                            
-                             
-                            rayhit.ray.tnear  = 1e-4f;                              
-                            rayhit.ray.dir_x  = dir[0]; rayhit.ray.dir_y = dir[1]; rayhit.ray.dir_z = dir[2];
-                            rayhit.ray.tfar   = std::numeric_limits<float>::infinity();
-                            rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
-
-                            rtcIntersect1(scene, &context, &rayhit);
-
-                            if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
-                                backHit++;
-                                Point3f p = b+dir*rayhit.ray.tfar;
-                                backHit += findInterceptNumber(-p*2);
-                            }
-
-                        }
-                        
-                        
+                 
                     }
 
                     if(frontHit>backHit)
-                        inputM.face[i].N() *= -1;//cout<<i<<" should be flipped"<<endl;
-                    
+                        inputM.face[i].SetS();
+          
                 }
-                cout<<"time "<< (omp_get_wtime() - start)/60 <<endl;
+                //cout<<"time "<< (omp_get_wtime() - start)/60 <<endl;
             }
-            tri::UpdateColor<MeshType>::PerFaceQualityGray(inputM);
+
+            tri::Clean<MeshType>::FlipMesh(inputM,true);
+
             rtcReleaseScene(scene);
             rtcReleaseDevice(device);
          }
