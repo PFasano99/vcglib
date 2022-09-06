@@ -88,10 +88,10 @@ namespace vcg{
          void loadVCGMeshInScene(MeshType &m){
             //a little mesh preprocessing before adding it to a RTCScene          
             tri::RequirePerVertexNormal(m);
-            tri::UpdateNormal<MyMesh>::PerVertexNormalized(m);
-            tri::UpdateNormal<MyMesh>::PerFaceNormalized(m);
-            tri::UpdateBounding<MyMesh>::Box(m);
-            tri::UpdateFlags<MyMesh>::FaceClearV(m);
+            tri::UpdateNormal<MeshType>::PerVertexNormalized(m);
+            tri::UpdateNormal<MeshType>::PerFaceNormalized(m);
+            tri::UpdateBounding<MeshType>::Box(m);
+            tri::UpdateFlags<MeshType>::FaceClearV(m);
                        
             float* vb = (float*) rtcSetNewGeometryBuffer(geometry, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, 3*sizeof(float), m.VN());
             for (int i = 0;i<m.VN(); i++){
@@ -141,7 +141,7 @@ namespace vcg{
         public:
          void computeAmbientOcclusion(MeshType &inputM, std::vector<Point3f> unifDirVec){
             tri::UpdateQuality<MeshType>::FaceConstant(inputM,0);
-            MyMesh::PerFaceAttributeHandle<Point3f> bentNormal = vcg::tri::Allocator<MyMesh>::GetPerFaceAttribute<Point3f>(inputM,string("BentNormal"));
+            typename MeshType::template PerFaceAttributeHandle<Point3f> bentNormal = vcg::tri::Allocator<MeshType>:: template GetPerFaceAttribute<Point3f>(inputM,string("BentNormal"));
   
             #pragma omp parallel shared(inputM) 
             {
@@ -200,7 +200,7 @@ namespace vcg{
             std::vector<Point3f> unifDirVec;
                 GenNormal<float>::Fibonacci(nRay,unifDirVec);
 
-           computeObscurance(inputM, nRay, unifDirVec, tau);
+           computeObscurance(inputM, unifDirVec, tau);
         }
 
         /*
