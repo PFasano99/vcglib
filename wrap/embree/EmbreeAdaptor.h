@@ -565,6 +565,65 @@ namespace vcg{
             return;
         }
 
+        /*
+            
+            the return tuple is composed by 
+                - bool represents if the ray hit something
+                - point3f the coordinates at which the ray hit something
+                - float distance between point hit and the origin point
+                - int the id of the face hit by the ray
+        */
+        public:
+            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f origin, Point3f direction){
+                
+                bool hit_something = false;
+                Point3f hit_face_coords(0.0f, 0.0f, 0.0f);
+                float hit_distance = 0;
+                int hit_face_id = 0;
+
+                RTCRayHit rayhit = initRayValues();
+
+                rayhit = setRayValues(origin, direction, 4);
+
+                RTCRayQueryContext context;
+                rtcInitRayQueryContext(&context);
+
+                RTCIntersectArguments intersectArgs;
+                rtcInitIntersectArguments(&intersectArgs);
+                intersectArgs.context = &context;
+
+                rtcIntersect1(scene, &rayhit, &intersectArgs);
+            
+
+                if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID){
+                    hit_something = true;
+                    hit_face_id = rayhit.hit.primID;
+                    hit_distance = rayhit.ray.tfar;
+
+                    // Calculate the displacement vector along the direction
+                    float magnitude = sqrt(direction[0] * direction[0] + direction[1] * direction[1] + direction[2] * direction[2]);
+                    float scaleFactor = hit_distance / magnitude;
+                    Point3f displacement(direction[0] * scaleFactor, direction[1] * scaleFactor, direction[2] * scaleFactor);
+
+                    // Calculate the coordinates at the given distance
+                    hit_face_coords[0] = origin[0] + displacement[0];
+                    hit_face_coords[1] = origin[1] + displacement[1];
+                    hit_face_coords[2] = origin[2] + displacement[2];
+
+                }
+                else{
+                    hit_something = false;
+
+                }
+                
+                
+                rtcReleaseScene(scene);
+                rtcReleaseDevice(device);
+
+                return std::make_tuple(hit_something, hit_face_coords, hit_distance, hit_face_id);
+            }
+
+
         public:
             inline RTCRayHit initRayValues(){
                 RTCRayHit rayhit;
