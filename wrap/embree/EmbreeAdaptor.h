@@ -34,13 +34,18 @@ namespace vcg{
 
         RTCDevice device = rtcNewDevice(NULL);
         RTCScene scene = rtcNewScene(device);
-        RTCGeometry geometry = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
+        //RTCGeometry geometry = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
+        //RTCScene scene;
         int threads;
+
+        public: EmbreeAdaptor(){}
 
         public:
          EmbreeAdaptor(MeshType &m){
-                loadVCGMeshInScene(m);
+                scene = loadVCGMeshInScene(m);
             }
+
+
 
         /*
         @Author: Paolo Fasano
@@ -101,7 +106,11 @@ namespace vcg{
             are global to the class in order to be used with the other methods.
         */
         public:
-         void loadVCGMeshInScene(MeshType &m){
+            RTCScene loadVCGMeshInScene(MeshType &m){
+
+            RTCScene loaded_scene = rtcNewScene(device);
+            RTCGeometry geometry = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
+
             //a little mesh preprocessing before adding it to a RTCScene
             tri::RequirePerVertexNormal(m);
             tri::UpdateNormal<MeshType>::PerVertexNormalized(m);
@@ -126,7 +135,9 @@ namespace vcg{
             rtcCommitGeometry(geometry);
             rtcAttachGeometry(scene, geometry);
             rtcReleaseGeometry(geometry);
-            rtcCommitScene(scene);
+            rtcCommitScene(loaded_scene);
+
+            return loaded_scene;
         }
 
         /*
@@ -574,7 +585,7 @@ namespace vcg{
                 - int the id of the face hit by the ray
         */
         public:
-            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f origin, Point3f direction){
+            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f origin, Point3f direction, bool release_resources = true){
                 
                 bool hit_something = false;
                 Point3f hit_face_coords(0.0f, 0.0f, 0.0f);
@@ -594,7 +605,6 @@ namespace vcg{
 
                 rtcIntersect1(scene, &rayhit, &intersectArgs);
             
-
                 if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID){
                     hit_something = true;
                     hit_face_id = rayhit.hit.primID;
@@ -613,14 +623,20 @@ namespace vcg{
                 }
                 else{
                     hit_something = false;
-
                 }
                 
-                
-                rtcReleaseScene(scene);
-                rtcReleaseDevice(device);
+                if(release_resources){
+                    release_global_resources();
+                }
 
                 return std::make_tuple(hit_something, hit_face_coords, hit_distance, hit_face_id);
+            }
+
+
+        public:
+            void release_global_resources(){
+                rtcReleaseScene(scene);
+                rtcReleaseDevice(device);
             }
 
 
