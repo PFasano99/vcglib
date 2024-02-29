@@ -594,7 +594,7 @@ namespace vcg{
 
                 RTCRayHit rayhit = initRayValues();
 
-                rayhit = setRayValues(origin, direction, 4);
+                rayhit = setRayValues(origin, direction, 1e-4f);
 
                 RTCRayQueryContext context;
                 rtcInitRayQueryContext(&context);
