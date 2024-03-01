@@ -35,7 +35,6 @@ namespace vcg{
         RTCDevice device = rtcNewDevice(NULL);
         RTCScene scene = rtcNewScene(device);
         //RTCGeometry geometry = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-        //RTCScene scene;
         int threads;
 
         public: EmbreeAdaptor(){}
@@ -133,7 +132,7 @@ namespace vcg{
             }
 
             rtcCommitGeometry(geometry);
-            rtcAttachGeometry(scene, geometry);
+            rtcAttachGeometry(loaded_scene, geometry);
             rtcReleaseGeometry(geometry);
             rtcCommitScene(loaded_scene);
 
@@ -586,6 +585,11 @@ namespace vcg{
         */
         public:
             inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f origin, Point3f direction, bool release_resources = true){
+                return shoot_ray(origin, direction, 1e-4, release_resources);
+            }
+
+        public:
+            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f origin, Point3f direction, float tnear, bool release_resources = true){
                 
                 bool hit_something = false;
                 Point3f hit_face_coords(0.0f, 0.0f, 0.0f);
@@ -593,8 +597,7 @@ namespace vcg{
                 int hit_face_id = 0;
 
                 RTCRayHit rayhit = initRayValues();
-
-                rayhit = setRayValues(origin, direction, 1e-4f);
+                rayhit = setRayValues(origin, direction, tnear);
 
                 RTCRayQueryContext context;
                 rtcInitRayQueryContext(&context);
@@ -604,7 +607,8 @@ namespace vcg{
                 intersectArgs.context = &context;
 
                 rtcIntersect1(scene, &rayhit, &intersectArgs);
-            
+
+
                 if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID){
                     hit_something = true;
                     hit_face_id = rayhit.hit.primID;
@@ -623,6 +627,8 @@ namespace vcg{
                 }
                 else{
                     hit_something = false;
+                    hit_face_id = rayhit.hit.primID;
+                    hit_distance = rayhit.ray.tfar;
                 }
                 
                 if(release_resources){
@@ -637,6 +643,15 @@ namespace vcg{
             void release_global_resources(){
                 rtcReleaseScene(scene);
                 rtcReleaseDevice(device);
+            }
+
+        public:
+            void print_ray_informations(RTCRayHit rayhit){
+
+                std::cout<< "origin of ray " << rayhit.ray.org_x<< " " << rayhit.ray.org_y<< " " << rayhit.ray.org_z<< " " <<endl;
+                std::cout<< "direction of ray " << rayhit.ray.dir_x<< " " << rayhit.ray.dir_y<< " " << rayhit.ray.dir_z<< " " <<endl;
+                std::cout<< "tnear " << rayhit.ray.tnear <<endl;
+                std::cout<< "tfar " << rayhit.ray.tfar <<endl;
             }
 
 
