@@ -26,7 +26,7 @@ using namespace std;
 
 /*
     @Author: Paolo Fasano
-    @Description: This class aims to integrate intel embree3 with the vcglib giving some basic methods that can be used to build more complex features.
+    @Description: This class aims to integrate intel embree4 with the vcglib giving some basic methods that can be used to build more complex features.
 */
 namespace vcg{
     template <class MeshType>
@@ -608,12 +608,12 @@ namespace vcg{
                         
         */
         public:
-            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f origin, Point3f direction, bool release_resources = true){
-                return shoot_ray(origin, direction, 1e-4, release_resources);
+            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f& origin, Point3f& direction, bool release_resources = true, bool print_ray_info = false){
+                return shoot_ray(origin, direction, 1e-4, release_resources, print_ray_info);
             }
 
         public:
-            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f origin, Point3f direction, float tnear, bool release_resources = true){
+            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f& origin, Point3f& direction, float& tnear, bool release_resources = true, bool print_ray_info = false){
                 
                 bool hit_something = false;
                 Point3f hit_face_coords(0.0f, 0.0f, 0.0f);
@@ -622,6 +622,10 @@ namespace vcg{
 
                 RTCRayHit rayhit = initRayValues();
                 rayhit = setRayValues(origin, direction, tnear);
+
+                if(print_ray_info){
+                    print_ray_informations(rayhit);
+                }
 
                 RTCRayQueryContext context;
                 rtcInitRayQueryContext(&context);
@@ -730,7 +734,7 @@ namespace vcg{
 
 
         public:
-            void print_ray_informations(RTCRayHit rayhit){
+            void print_ray_informations(RTCRayHit& rayhit){
 
                 std::cout<< "origin of ray " << rayhit.ray.org_x<< " " << rayhit.ray.org_y<< " " << rayhit.ray.org_z<< " " <<endl;
                 std::cout<< "direction of ray " << rayhit.ray.dir_x<< " " << rayhit.ray.dir_y<< " " << rayhit.ray.dir_z<< " " <<endl;
@@ -751,7 +755,7 @@ namespace vcg{
 
         //given a ray and a direction expressed as point3f, this method modifies the ray direction of the ray tp the given direction
         public:
-            inline void updateRayDirection(RTCRayHit& rayhit, Point3f direction){
+            inline void updateRayDirection(RTCRayHit& rayhit, Point3f& direction){
 
                 //setting the ray direction
                 rayhit.ray.dir_x = direction[0];
@@ -762,7 +766,7 @@ namespace vcg{
 
         //given a ray and a point of origin expressed as point3f, this method modifies the origin point of the ray tp the origin point given
         public:
-            inline void updateRayOrigin(RTCRayHit& rayhit, Point3f origin){
+            inline void updateRayOrigin(RTCRayHit& rayhit, Point3f& origin){
 
                 //setting the ray point of origin
                 rayhit.ray.org_x = origin[0];
@@ -771,7 +775,7 @@ namespace vcg{
             }
 
         public:
-            inline RTCRayHit setRayValues(Point3f origin, Point3f direction, float tnear, float tfar = std::numeric_limits<float>::infinity()){
+            inline RTCRayHit setRayValues(Point3f& origin, Point3f& direction, float& tnear, float tfar = std::numeric_limits<float>::infinity()){
 
                 RTCRayHit rayhit = initRayValues();
 
