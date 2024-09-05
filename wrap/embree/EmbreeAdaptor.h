@@ -609,11 +609,11 @@ namespace vcg{
         */
         public:
             inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f& origin, Point3f& direction, bool release_resources = true, bool print_ray_info = false){
-                return shoot_ray(origin, direction, 1e-4, release_resources, print_ray_info);
+                return shoot_ray(origin, direction, 1e-4f, release_resources, print_ray_info);
             }
 
         public:
-            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f& origin, Point3f& direction, float& tnear, bool release_resources = true, bool print_ray_info = false){
+            inline std::tuple<bool, Point3f, float, int> shoot_ray(Point3f& origin, Point3f& direction, float tnear, bool release_resources = true, bool print_ray_info = false){
                 
                 bool hit_something = false;
                 Point3f hit_face_coords(0.0f, 0.0f, 0.0f);
